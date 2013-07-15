@@ -29,9 +29,17 @@ class Cucumber(object):
     @classmethod
     def migrate_from(cls, old_version, new_version):
         def migration(func):
-            cls._migrations[old_version, new_version] = func
+            cls._add_migration(old_version, new_version, func)
             return func
         return migration
+
+    @classmethod
+    def _add_migration(cls, old_version, new_version, func):
+        for (old, new), other_func in cls._migrations.items():
+            if new == old_version:
+                composed = lambda *args: func(*other_func(*args))
+                cls._add_migration(old, new_version, composed)
+        cls._migrations[old_version, new_version] = func
 
     def __getstate__(self):
         fields = map(self.__getattribute__, self._fields)
@@ -53,7 +61,7 @@ class Cucumber(object):
 
 
 class Test(Cucumber):
-    _version = '1.0'
+    _version = 0
     _fields = 'foo bar foobar'.split()
 
     def __init__(self, foo, bar, foobar):
@@ -64,10 +72,9 @@ class Test(Cucumber):
 import pickle
 old_test = Test(1, 2, 3)
 old_test_pickle = pickle.dumps(old_test, 2)
-print len(old_test_pickle)
 
 class Test(Cucumber):
-    _version = '1.1'
+    _version = 1
     _fields = 'foo bar foobar new_field'.split()
 
     def __init__(self, foo, bar, foobar, new_field):
@@ -76,9 +83,23 @@ class Test(Cucumber):
         self.foobar = foobar
         self.new_field = new_field
 
-@Test.migrate_from('1.0', '1.1')
+class Test(Cucumber):
+    _version = 2
+    _fields = 'foo bar foobar new_field'.split()
+
+    def __init__(self, foo, bar, foobar, new_field):
+        self.foo = foo
+        self.bar = bar
+        self.foobar = foobar
+        self.new_field = new_field
+
+@Test.migrate_from(0, 1)
 def add_new_field(foo, bar, foobar):
     return (foo, bar, foobar, 'this is a new field')
+
+@Test.migrate_from(1, 2)
+def increment_foobar(foo, bar, foobar, new_field):
+    return (foo, bar, foobar + 1, new_field)
 
 migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
