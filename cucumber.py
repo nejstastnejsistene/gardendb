@@ -7,13 +7,23 @@ class Cucumber(object):
     representations.
     '''
 
-    _version = None
-    _migrations = {}
-
     class __metaclass__(type):
+        '''
+        Enforce the existance of _fields, and fill in defaults for _version
+        and _migrations.
+
+        I feel justified using this "black magic" because I think it's
+        important to raise an error for a missing _fields attribute early
+        rather than later when trying to pickle, and to avoid weird
+        name space issues from having _version and _migrations as class
+        fields of Cucumber.
+        '''
         def __new__(self, name, bases, dct):
-            if name != 'Cucumber' and '_fields' not in dct:
-                raise AttributeError, 'expecting _fields attribute'
+            if name != 'Cucumber':
+                if '_fields' not in dct:
+                    raise AttributeError, 'expecting _fields attribute'
+                dct['_version'] = dct.get('_version', None)
+                dct['_migrations'] = dct.get('_migrations', {})
             return type.__new__(self, name, bases, dct)
 
     @classmethod
