@@ -8,6 +8,7 @@ class Cucumber(object):
     '''
 
     _version = None
+    _migrations = {}
 
     class __metaclass__(type):
         def __new__(self, name, bases, dct):
@@ -15,13 +16,23 @@ class Cucumber(object):
                 raise AttributeError, 'expecting _fields attribute'
             return type.__new__(self, name, bases, dct)
 
+    @classmethod
+    def migrate_from(cls, old_version, new_version):
+        def migration(func):
+            cls._migrations[old_version, new_version] = func
+            return func
+        return migration
+
     def __getstate__(self):
         fields = map(self.__getattribute__, self._fields)
         return tuple([self._version] + fields)
 
     def __setstate__(self, state):
-        assert state[0] == self._version
-        for k, v in zip(self._fields, state[1:]):
+        version = state[0]
+        state = state[1:]
+        if version != self._version:
+            state = self._migrations[version, self._version](*state)
+        for k, v in zip(self._fields, state):
             setattr(self, k, v)
 
     def __repr__(self):
@@ -40,6 +51,24 @@ class Test(Cucumber):
         self.bar = bar
         self.foobar = foobar
 
-test = Test(1, 2, 3)
 import pickle
-print len(pickle.dumps(test, 2))
+old_test = Test(1, 2, 3)
+old_test_pickle = pickle.dumps(old_test, 2)
+print len(old_test_pickle)
+
+class Test(Cucumber):
+    _version = '1.1'
+    _fields = 'foo bar foobar new_field'.split()
+
+    def __init__(self, foo, bar, foobar, new_field):
+        self.foo = foo
+        self.bar = bar
+        self.foobar = foobar
+        self.new_field = new_field
+
+@Test.migrate_from('1.0', '1.1')
+def add_new_field(foo, bar, foobar):
+    return (foo, bar, foobar, 'this is a new field')
+
+migrated_test = pickle.loads(old_test_pickle)
+print migrated_test
