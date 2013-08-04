@@ -1,10 +1,3 @@
-gardendb (WIP)
-============== 
-Simple python flat-file databases with Cucumbers: simple, version-controlled records with streamlined pickle representations.
-
-## Example Cucumber Usage
-
-```python
 import pickle
 from cucumber import Cucumber
 
@@ -41,5 +34,3 @@ def increment_foobar(foo, bar, foobar, new_field):
 # performed the necessary migrations.
 migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
-# Test(foo=1, bar=2, foobar=4, new_field='this is a new field')
-```

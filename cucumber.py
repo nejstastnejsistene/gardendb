@@ -81,34 +81,3 @@ class Cucumber(object):
         fields = map(self.__getattribute__, self._fields)
         pairs = ('%s=%r' % pair for pair in zip(self._fields, fields))
         return '%s(%s)' % (name, ', '.join(pairs))
-
-
-class Test(Cucumber):
-    _version = 0
-    _fields = 'foo bar foobar'.split()
-
-import pickle
-old_test = Test(1, 2, 3)
-old_test_pickle = pickle.dumps(old_test, 2)
-
-class Test(Cucumber):
-    _version = 1
-    _fields = 'foo bar foobar new_field'.split()
-
-class Test(Cucumber):
-    _version = 2
-    _fields = 'foo bar foobar new_field'.split()
-
-@Test.migrate_from(0, 1)
-def add_new_field(foo, bar, foobar):
-    return (foo, bar, foobar, 'this is a new field')
-
-@Test.migrate_from(1, 2)
-def increment_foobar(foo, bar, foobar, new_field):
-    return (foo, bar, foobar + 1, new_field)
-
-migrated_test = pickle.loads(old_test_pickle)
-print migrated_test
-
-for x in migrated_test:
-    print x
