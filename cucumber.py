@@ -16,15 +16,35 @@ class Cucumber(object):
         important to raise an error for a missing _fields attribute early
         rather than later when trying to pickle, and to avoid weird
         name space issues from having _version and _migrations as class
-        fields of Cucumber.
+        fields of Cucumber. Also, a default doc string is generated here.
         '''
         def __new__(self, name, bases, dct):
             if name != 'Cucumber':
                 if '_fields' not in dct:
                     raise AttributeError, 'expecting _fields attribute'
+
+                # Default version and migrations dictionary.
                 dct['_version'] = dct.get('_version', None)
                 dct['_migrations'] = dct.get('_migrations', {})
+
+                # Default doc string.
+                arg_list = ', '.join(map(str, dct['_fields']))
+                default_doc = '{name}({arg_list})'.format(**locals())
+                dct['__doc__'] = dct.get('__doc__', default_doc)
+
             return type.__new__(self, name, bases, dct)
+
+    def __init__(self, *args, **kwargs):
+        '''Takes arguments from _fields as variable and keyword arguments.'''
+        pairs = zip(self._fields, args)
+        remaining_fields = self._fields[len(pairs):]
+        for name, value in pairs:
+            setattr(self, name, value)
+        for name, value in kwargs.items():
+            remaining_fields.remove(key)
+            setattr(self, name, value)
+        assert not remaining_fields, \
+                'No values were provided for: %r' % remaining_fields
 
     @classmethod
     def migrate_from(cls, old_version, new_version):
@@ -53,6 +73,9 @@ class Cucumber(object):
         for k, v in zip(self._fields, state):
             setattr(self, k, v)
 
+    def __iter__(self):
+        return iter(map(self.__getattribute__, self._fields))
+
     def __repr__(self):
         name = self.__class__.__name__
         fields = map(self.__getattribute__, self._fields)
@@ -64,11 +87,6 @@ class Test(Cucumber):
     _version = 0
     _fields = 'foo bar foobar'.split()
 
-    def __init__(self, foo, bar, foobar):
-        self.foo = foo
-        self.bar = bar
-        self.foobar = foobar
-
 import pickle
 old_test = Test(1, 2, 3)
 old_test_pickle = pickle.dumps(old_test, 2)
@@ -77,21 +95,9 @@ class Test(Cucumber):
     _version = 1
     _fields = 'foo bar foobar new_field'.split()
 
-    def __init__(self, foo, bar, foobar, new_field):
-        self.foo = foo
-        self.bar = bar
-        self.foobar = foobar
-        self.new_field = new_field
-
 class Test(Cucumber):
     _version = 2
     _fields = 'foo bar foobar new_field'.split()
-
-    def __init__(self, foo, bar, foobar, new_field):
-        self.foo = foo
-        self.bar = bar
-        self.foobar = foobar
-        self.new_field = new_field
 
 @Test.migrate_from(0, 1)
 def add_new_field(foo, bar, foobar):
@@ -103,3 +109,6 @@ def increment_foobar(foo, bar, foobar, new_field):
 
 migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
+
+for x in migrated_test:
+    print x
