@@ -2,23 +2,17 @@ import pickle
 from gardendb import *
 
 # Test version 0.
-class Test(Cucumber):
-    _version = 0
-    _fields = 'foo bar foobar'.split()
+Test = cucumber('Test', 'foo bar foobar', version=0)
 
 # Create and pickle a Test object.
 old_test = Test(1, 2, 3)
 old_test_pickle = pickle.dumps(old_test, 2)
 
 # Test version 1.
-class Test(Cucumber):
-    _version = 1
-    _fields = 'foo bar foobar new_field'.split()
+Test = cucumber('Test', 'foo bar foobar new_field', version=1)
 
 # Test version 2.
-class Test(Cucumber):
-    _version = 2
-    _fields = 'foo bar foobar new_field'.split()
+Test = cucumber('Test', 'foo bar foobar new_field', version=2)
 
 # Migration from version 0 to 1.
 @Test.migrate_from(0, 1)
@@ -35,9 +29,12 @@ def increment_foobar(foo, bar, foobar, new_field):
 migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
 
-NamedTupleCucumber = cucumber('NamedTupleCucumber', 'a b c import is 5',
-                              rename=True, version=5)
-print NamedTupleCucumber(*range(6))
+import collections
+
+Point = cucumber('Point', 'x y')
+print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
+Point = collections.namedtuple('Point', 'x y')
+print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
 
 try:
     # Import cucumber.psycopg2 to enable automatic type conversion to
@@ -51,13 +48,5 @@ try:
         cur.execute('SELECT foo FROM cucumber')
         print cur.fetchone()[0]
     conn.close()
-except:
-    print 'unable to run psycopg2 test'
-
-import collections
-import pickle
-
-Point = cucumber('Point', 'x y')
-print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
-Point = collections.namedtuple('Point', 'x y')
-print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
+except Exception, e:
+    print 'unable to run psycopg2 test:', e
