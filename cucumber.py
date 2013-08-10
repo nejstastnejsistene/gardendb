@@ -67,8 +67,7 @@ class Cucumber(object):
         cls._migrations[old_version, new_version] = func
 
     def __getstate__(self):
-        fields = map(self.__getattribute__, self._fields)
-        return tuple([self._version] + fields)
+        return tuple([self._version] + list(self))
 
     def __setstate__(self, state):
         version = state[0]
@@ -83,8 +82,7 @@ class Cucumber(object):
 
     def __repr__(self):
         name = self.__class__.__name__
-        fields = map(self.__getattribute__, self._fields)
-        pairs = ('%s=%r' % pair for pair in zip(self._fields, fields))
+        pairs = ('%s=%r' % pair for pair in zip(self._fields, self))
         return '%s(%s)' % (name, ', '.join(pairs))
 
     def __conform__(self, protocol):
