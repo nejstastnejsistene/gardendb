@@ -6,7 +6,7 @@ Simple python flat-file databases with Cucumbers: simple, version-controlled rec
 
 ```python
 import pickle
-from cucumber import Cucumber
+from cucumber import *
 
 # Test version 0.
 class Test(Cucumber):
@@ -42,6 +42,29 @@ def increment_foobar(foo, bar, foobar, new_field):
 migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
 # Test(foo=1, bar=2, foobar=4, new_field='this is a new field')
+```
+
+## Drop-in replacement for collections.namedtuple
+
+Cucumbers are mostly interchangeably with namedtuples using the cucumber function.
+
+There are a few differences:
+
+* Cucumbers have nicer pickling properties :)
+* The verbose flag for will instead print out a message apologizing for not being able to print the source.
+* The cucumber function also accepts `version` and `migration` keyword arguments. Specifically, `rename`, `version`, and `migrations` keywords are attached to the class as `_rename`, `_version`, and `_migrations` attributes, which is how the same functionality would be achieved the normal way.
+* Cucumbers are not instances of tuple, and thus can have their own user-defined methods as well as fields that aren't part of their state.
+
+```python
+# Create a Cucumber using cucumber() with the rename flag.
+# Equivalent to:
+# class NamedTupleCucumber(Cucumber):
+#     _fields = 'a b c import is 5'
+#     _rename = True
+#     _version = 5
+NamedTupleCucumber = cucumber('NamedTupleCucumber', 'a b c import is 5', rename=True, version=5)
+print NamedTupleCucumber(*range(6))
+# NamedTupleCucumber(a=0, b=1, c=2, _3=3, _4=4, _5=5)
 ```
 
 ## Seamless psycopg2 conversion

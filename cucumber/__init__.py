@@ -1,3 +1,62 @@
+from keyword import iskeyword as _iskeyword
+
+__all__ = ('Cucumber', 'cucumber')
+
+def cucumber(typename, field_names, verbose=False, rename=False,
+             version=None, migrations={}):
+    '''Create a Cucumber dynamically.
+
+       This has the same signature as collections.namedtuple and is
+       intended as a drop in replacement. It also accepts version and
+       migrations keyword arguments.
+    '''
+    return type(typename, (Cucumber,), {
+            '_fields': field_names,
+            '_verbose': verbose,
+            '_rename': rename,
+            '_version': version,
+            '_migrations': migrations,
+        })
+
+
+def validate_names(typename, field_names, rename):
+    '''Copied from collection.py lines 311-344.'''
+    # Validate the field names.  At the user's option, either generate an error
+    # message or automatically replace the field name with a valid name.
+    if isinstance(field_names, basestring):
+        field_names = field_names.replace(',', ' ').split()
+    field_names = map(str, field_names)
+    if rename:
+        seen = set()
+        for index, name in enumerate(field_names):
+            if (not all(c.isalnum() or c=='_' for c in name)
+                or _iskeyword(name)
+                or not name
+                or name[0].isdigit()
+                or name.startswith('_')
+                or name in seen):
+                field_names[index] = '_%d' % index
+            seen.add(name)
+    for name in [typename] + field_names:
+        if not all(c.isalnum() or c=='_' for c in name):
+            raise ValueError('Type names and field names can only contain '
+                             'alphanumeric characters and underscores: %r' % name)
+        if _iskeyword(name):
+            raise ValueError('Type names and field names cannot be a '
+                             'keyword: %r' % name)
+        if name[0].isdigit():
+            raise ValueError('Type names and field names cannot start with '
+                             'a number: %r' % name)
+    seen = set()
+    for name in field_names:
+        if name.startswith('_') and not rename:
+            raise ValueError('Field names cannot start with an underscore: '
+                             '%r' % name)
+        if name in seen:
+            raise ValueError('Encountered duplicate field name: %r' % name)
+        seen.add(name)
+    return field_names
+
 
 class Cucumber(object):
     '''
@@ -22,6 +81,13 @@ class Cucumber(object):
             if name != 'Cucumber':
                 if '_fields' not in dct:
                     raise AttributeError, 'expecting _fields attribute'
+
+                # Validate the type and field names.
+                dct['_fields'] = validate_names(name, dct['_fields'],
+                                                dct.pop('_rename', False))
+
+                if dct.pop('_verbose', False):
+                    print 'sorry, cucumber has no verbose mode'
 
                 # Default version and migrations dictionary.
                 dct['_version'] = dct.get('_version', None)
@@ -74,6 +140,9 @@ class Cucumber(object):
 
     def __iter__(self):
         return iter(map(self.__getattribute__, self._fields))
+
+    def __getitem__(self, key):
+        return tuple(self)[key]
 
     def __repr__(self):
         name = self.__class__.__name__
