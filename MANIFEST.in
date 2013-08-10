@@ -1,0 +1,2 @@
+include REAMDE.md LICENSE version.txt
+recursive-exclude *.py[co]
