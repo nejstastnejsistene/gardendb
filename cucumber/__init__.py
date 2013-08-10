@@ -41,7 +41,7 @@ class Cucumber(object):
         for name, value in pairs:
             setattr(self, name, value)
         for name, value in kwargs.items():
-            remaining_fields.remove(key)
+            remaining_fields.remove(name)
             setattr(self, name, value)
         assert not remaining_fields, \
                 'No values were provided for: %r' % remaining_fields
