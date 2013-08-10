@@ -2,6 +2,24 @@ gardendb (WIP)
 ============== 
 Simple python flat-file databases with Cucumbers: simple, version-controlled records with streamlined pickle representations.
 
+## Streamlined Pickle Representations
+
+```python
+import collections
+import pickle
+from cucumber import *
+
+# Point created with namedtuple.
+Point = collections.namedtuple('Point', 'x y')
+print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
+# 35
+
+# Point created with cucumber.
+Point = cucumber('Point', 'x y')
+print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
+# 94
+```
+
 ## Example Cucumber Usage
 
 ```python
@@ -9,23 +27,17 @@ import pickle
 from cucumber import *
 
 # Test version 0.
-class Test(Cucumber):
-    _version = 0
-    _fields = 'foo bar foobar'.split()
+Test = cucumber('Test', 'foo bar foobar', version=0)
 
 # Create and pickle a Test object.
 old_test = Test(1, 2, 3)
 old_test_pickle = pickle.dumps(old_test, 2)
 
 # Test version 1.
-class Test(Cucumber):
-    _version = 1
-    _fields = 'foo bar foobar new_field'.split()
+Test = cucumber('Test', 'foo bar foobar new_field', version=1)
 
 # Test version 2.
-class Test(Cucumber):
-    _version = 2
-    _fields = 'foo bar foobar new_field'.split()
+Test = cucumber('Test', 'foo bar foobar new_field', version=2)
 
 # Migration from version 0 to 1.
 @Test.migrate_from(0, 1)
@@ -41,30 +53,6 @@ def increment_foobar(foo, bar, foobar, new_field):
 # performed the necessary migrations.
 migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
-# Test(foo=1, bar=2, foobar=4, new_field='this is a new field')
-```
-
-## Drop-in replacement for collections.namedtuple
-
-Cucumbers are mostly interchangeably with namedtuples using the cucumber function.
-
-There are a few differences:
-
-* Cucumbers have nicer pickling properties :)
-* The verbose flag for will instead print out a message apologizing for not being able to print the source.
-* The cucumber function also accepts `version` and `migration` keyword arguments. Specifically, `rename`, `version`, and `migrations` keywords are attached to the class as `_rename`, `_version`, and `_migrations` attributes, which is how the same functionality would be achieved the normal way.
-* Cucumbers are not instances of tuple, and thus can have their own user-defined methods as well as fields that aren't part of their state.
-
-```python
-# Create a Cucumber using cucumber() with the rename flag.
-# Equivalent to:
-# class NamedTupleCucumber(Cucumber):
-#     _fields = 'a b c import is 5'
-#     _rename = True
-#     _version = 5
-NamedTupleCucumber = cucumber('NamedTupleCucumber', 'a b c import is 5', rename=True, version=5)
-print NamedTupleCucumber(*range(6))
-# NamedTupleCucumber(a=0, b=1, c=2, _3=3, _4=4, _5=5)
 ```
 
 ## Seamless psycopg2 conversion
