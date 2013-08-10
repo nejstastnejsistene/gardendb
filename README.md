@@ -59,28 +59,31 @@ print migrated_test
 
 ```python
 import psycopg2
-
 # Import cucumber.psycopg2 to enable automatic type conversion to
-# the postgresql bytea type.
+# the postgresql bytea type. This must be imported before your
+# cucumbers are created.
 import cucumber.postgres
+
+Ahoj = cucumber('Ahoj', 'dobry den')
+ahoj = Ahoj('na', 'shledanou')
 
 # Database template1 has a table called cucumber which has a
 # single row called foo with type bytea.
 conn = psycopg2.connect(database='template1')
 
 with conn.cursor() as cur:
-    # Initialization must happen once before anything else.
+    # Initialization must happen once before the pickles are used.
     cucumber.postgres.init(cur)
 
     # Inserting a python value into a bytea automatically pickles it first.
-    cur.execute('INSERT INTO cucumber VALUES (%s)', (migrated_test,))
+    cur.execute('INSERT INTO cucumber VALUES (%s)', (ahoj,))
 
     # Retrieving the bytea unpickles it.
     cur.execute('SELECT foo FROM cucumber')
 
     # Same as before:
     print cur.fetchone()[0]
-    # Test(foo=1, bar=2, foobar=4, new_field='this is a new field')
+    # Ahoj(dobry='na', den='shledanou')
 
 conn.close()
 ```

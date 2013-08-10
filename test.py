@@ -40,11 +40,15 @@ try:
     # Import cucumber.psycopg2 to enable automatic type conversion to
     # postgresql types.
     import psycopg2
-    import cucumber.postgres
+    import gardendb.postgres
+
+    Ahoj = cucumber('Ahoj', 'dobry den')
+    ahoj = Ahoj('na', 'shledanou')
+
     conn = psycopg2.connect(database='template1')
     with conn.cursor() as cur:
-        cucumber.postgres.init(cur)
-        cur.execute('INSERT INTO cucumber VALUES (%s)', (migrated_test,))
+        gardendb.postgres.init(cur)
+        cur.execute('INSERT INTO cucumber VALUES (%s)', (ahoj,))
         cur.execute('SELECT foo FROM cucumber')
         print cur.fetchone()[0]
     conn.close()

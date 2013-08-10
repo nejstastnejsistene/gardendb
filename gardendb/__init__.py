@@ -2,6 +2,9 @@ import collections
 import inspect
 
 
+cucumber_add_ons = []
+
+
 def cucumber(typename, field_names, verbose=False, rename=False,
              version=None, migrations=None):
     '''Like namedtuple, but better for making pickles.'''
@@ -99,6 +102,9 @@ def cucumber(typename, field_names, verbose=False, rename=False,
     cls._add_migration = classmethod(_add_migration)
     for k, v in migrations.items():
         cls._add_migration(k[0], k[1], v)
+
+    for add_on in cucumber_add_ons:
+        cls = add_on(cls)
 
     # Correct __module__ for pickling to work correctly. 
     try:
