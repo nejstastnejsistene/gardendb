@@ -1,8 +1,3 @@
-try:
-    import cPickles as pickle
-except ImportError:
-    import pickle
-
 
 class Cucumber(object):
     '''
@@ -84,11 +79,3 @@ class Cucumber(object):
         name = self.__class__.__name__
         pairs = ('%s=%r' % pair for pair in zip(self._fields, self))
         return '%s(%s)' % (name, ', '.join(pairs))
-
-    def __conform__(self, protocol):
-        import psycopg2
-        if protocol == psycopg2.ISQLQuote:
-            return self
-
-    def getquoted(self):
-        return pickle.pickle(self)

@@ -34,3 +34,15 @@ def increment_foobar(foo, bar, foobar, new_field):
 # performed the necessary migrations.
 migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
+
+# Import cucumber.psycopg2 to enable automatic type conversion to
+# postgresql types.
+import psycopg2
+import cucumber.postgres
+conn = psycopg2.connect(database='template1')
+with conn.cursor() as cur:
+    cucumber.postgres.init(cur)
+    cur.execute('INSERT INTO cucumber VALUES (%s)', (migrated_test,))
+    cur.execute('SELECT foo FROM cucumber')
+    print cur.fetchone()[0]
+conn.close()
