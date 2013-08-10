@@ -43,3 +43,33 @@ migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
 # Test(foo=1, bar=2, foobar=4, new_field='this is a new field')
 ```
+
+## Seamless psycopg2 conversion
+
+```python
+import psycopg2
+
+# Import cucumber.psycopg2 to enable automatic type conversion to
+# the postgresql bytea type.
+import cucumber.postgres
+
+# Database template1 has a table called cucumber which has a
+# single row called foo with type bytea.
+conn = psycopg2.connect(database='template1')
+
+with conn.cursor() as cur:
+    # Initialization must happen once before anything else.
+    cucumber.postgres.init(cur)
+
+    # Inserting a python value into a bytea automatically pickles it first.
+    cur.execute('INSERT INTO cucumber VALUES (%s)', (migrated_test,))
+
+    # Retrieving the bytea unpickles it.
+    cur.execute('SELECT foo FROM cucumber')
+
+    # Same as before:
+    print cur.fetchone()[0]
+    # Test(foo=1, bar=2, foobar=4, new_field='this is a new field')
+
+conn.close()
+```
