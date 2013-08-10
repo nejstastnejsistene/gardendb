@@ -1,5 +1,5 @@
 import pickle
-from cucumber import *
+from gardendb import *
 
 # Test version 0.
 class Test(Cucumber):
@@ -53,3 +53,11 @@ try:
     conn.close()
 except:
     print 'unable to run psycopg2 test'
+
+import collections
+import pickle
+
+Point = cucumber('Point', 'x y')
+print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
+Point = collections.namedtuple('Point', 'x y')
+print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))

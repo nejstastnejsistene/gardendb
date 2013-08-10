@@ -1,22 +1,83 @@
 from keyword import iskeyword as _iskeyword
+import collections
+import inspect
 
 __all__ = ('Cucumber', 'cucumber')
 
+
 def cucumber(typename, field_names, verbose=False, rename=False,
              version=None, migrations={}):
-    '''Create a Cucumber dynamically.
 
-       This has the same signature as collections.namedtuple and is
-       intended as a drop in replacement. It also accepts version and
-       migrations keyword arguments.
-    '''
-    return type(typename, (Cucumber,), {
-            '_fields': field_names,
-            '_verbose': verbose,
-            '_rename': rename,
-            '_version': version,
-            '_migrations': migrations,
-        })
+    # Start out with a namedtuple.
+    cls = collections.namedtuple(typename, field_names, verbose, rename)
+
+    def __getnewargs__(self):
+        ''
+        return tuple([self._version] + list(self))
+
+    def __new__(cls, *args):
+        ''
+        if len(args) == len(cls._fields) + 1:
+            version, args = args[0], args[1:]
+            if version != cls._version:
+                args = cls._migrations[version, self._version](*args)
+        return tuple.__new__(cls, args)
+
+    def __getstate__(self):
+        'Minimize pickle size by excluding state.'
+
+    def __setstate__(self):
+        'Minimize pickle size by excluding state.'
+
+    def migrate_from(cls, old_version, new_version):
+        ''
+        def migration(func):
+            cls._add_migration(old_version, new_version, func)
+            return func
+        return migration
+
+    def _add_migration(cls, old_version, new_version, func):
+        ''
+        for (old, new), other_func in cls._migrations.items():
+            if new == old_version:
+                composed = lambda *args: func(*other_func(*args))
+                cls._add_migration(old, new_version, composed)
+        cls._migrations[old_version, new_version] = func
+
+    # Add new fields to the class.
+    cls._version       = version
+    cls._migrations    = migrations
+    cls.__getnewargs__ = __getnewargs__
+    cls.__new__        = staticmethod(__new__)
+    cls.__getstate__   = __getstate__
+    cls.__setstate__   = __setstate__
+    cls.migrate_from   = classmethod(migrate_from)
+    cls._add_migration = classmethod(_add_migration)
+
+    # Construct some source code for verbose outcode.
+    if verbose:
+        print '    # The following have been added by cucumber:'
+        print
+        print '    _version = {!r}'.format(version)
+        print '    _migrations = {!r}'.format(migrations)
+        print
+        print inspect.getsource(__getnewargs__)
+        print inspect.getsource(__new__)
+        print '    @classmethod'
+        print inspect.getsource(migrate_from)
+        print '    @classmethod'
+        print inspect.getsource(_add_migration)
+        print inspect.getsource(cls.__getstate__)
+        print inspect.getsource(cls.__setstate__)
+
+    # Correct __module__ for pickling to work correctly. 
+    try:
+        frame = inspect.currentframe().f_back
+        cls.__module__ = frame.f_globals.get('__name__', '__main__')
+    except (AttributeError, ValueError):
+        pass
+
+    return cls
 
 
 def validate_names(typename, field_names, rename):
