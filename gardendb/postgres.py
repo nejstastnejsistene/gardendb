@@ -1,19 +1,15 @@
 import binascii
 import psycopg2
-from psycopg2.errorcodes import DUPLICATE_TABLE
-from psycopg2.extensions import AsIs, ISQLQuote, new_type, \
-                                register_type, register_adapter
+from psycopg2.extensions import new_type, register_type
 
 try:
     import cPickles as pickle
 except ImportError:
     import pickle
 
-from . import cucumber_add_ons
-
 
 def adapt_bytea(obj):
-    '''Adapt an object using getquoted().'''
+    '''Adapt an object to a bytea by pickling.'''
     p = pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)
     return psycopg2.Binary(p)
 
@@ -27,18 +23,9 @@ def cast_bytea(value, cur):
         raise psycopg2.InterfaceError(mesg)
 
 
-def add_adapter(cls):
-    '''Register adapt_bytea() with this class.'''
-    register_adapter(cls, adapt_bytea) 
-    return cls
-
-
 # Register cast_bytea with psycopg2.
 PICKLE = new_type(psycopg2.BINARY.values, 'PICKLE', cast_bytea)
 register_type(PICKLE)
-
-# Register newly created cucumbers with psycopg2.
-cucumber_add_ons.append(add_adapter)
 
 
 def dummy_pool(conn):
@@ -75,19 +62,9 @@ class Garden(object):
     select_fmt = 'SELECT value FROM {name} WHERE key = %s'
     insert_fmt = 'INSERT INTO {name} (key, value) VALUES (%s, %s)'
 
-    def __init__(self, cls, pool):
-        self.cls = cls
+    def __init__(self, name, pool):
+        self.name = name
         self.pool = pool
-
-        # Convert CamelCase to camel_case.
-        cls_name = cls.__name__
-        name = [cls_name[0].lower()]
-        for c in cls_name[1:]:
-            if c.isupper():
-                name += ['_', c.lower()]
-            else:
-                name.append(c)
-        self.name = ''.join(name)
 
         # Format the class name into the table and rule definitions.
         self.table_def = self.def_fmt.format(name=self.name)
@@ -134,6 +111,8 @@ class Garden(object):
         '''Place/replace a cucumber into the Garden.'''
         if not isinstance(key, basestring):
             raise ValueError, 'keys must be strings'
+
+        value = adapt_bytea(value)
 
         conn = self.pool.getconn()
         with conn.cursor() as cur:
