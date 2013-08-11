@@ -26,10 +26,10 @@ setup(
     author = 'Peter Johnson',
     author_email = 'pajohnson@email.wm.edu',
     url = url,
-    download_url = url + '/archive/master.tar.gz',
+    download_url = url + '/releases',
     keywords = [],
     classifiers = classifiers,
     long_description = '''\
-This is a WIP, see the readme for more info more now.
+This is a WIP, see the readme for more info.
 '''
     )
