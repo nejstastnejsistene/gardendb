@@ -9,15 +9,15 @@ import collections
 import pickle
 from cucumber import *
 
-# Point created with namedtuple.
-Point = collections.namedtuple('Point', 'x y')
-print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
-# 94
-
 # Point created with cucumber.
 Point = cucumber('Point', 'x y')
 print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
 # 35
+
+# Point created with namedtuple.
+Point = collections.namedtuple('Point', 'x y')
+print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
+# 94
 ```
 
 ## Example Cucumber Usage
