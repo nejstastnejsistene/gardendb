@@ -22,7 +22,7 @@ def cast_bytea(value, cur):
     '''Convert a bytea to a python value by unpickling.'''
     try:
         return pickle.loads(binascii.unhexlify(value[2:]))
-    except:
+    except pickle.UnpicklingError:
         mesg = 'unable to unpickle bytea: {!r}'.format(value)
         raise psycopg2.InterfaceError(mesg)
 
@@ -115,17 +115,24 @@ class Cucumber(object):
         self.pool.putconn(conn)
 
     def __getitem__(self, key):
+        ''''''
+        if not isinstance(key, basestring):
+            raise ValueError, 'keys must be strings'
+
         conn = self.pool.getconn()
         with conn.cursor() as cur:
             cur.execute(self.select_cmd, (key,))
             value = cur.fetchone()
-        conn.commit()
         self.pool.putconn(conn)
+
         if value is not None:
             value = value[0]
         return value
 
     def __setitem__(self, key, value):
+        if not isinstance(key, basestring):
+            raise ValueError, 'keys must be strings'
+
         conn = self.pool.getconn()
         with conn.cursor() as cur:
             cur.execute(self.insert_cmd, (key, value))
