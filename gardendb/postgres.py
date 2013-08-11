@@ -50,7 +50,8 @@ def dummy_pool(conn):
     return DummyPool()
 
 
-class Cucumber(object):
+class Garden(object):
+    '''A place to store your cucumbers.'''
 
     def_fmt = '''
     CREATE TABLE {name}
@@ -115,7 +116,7 @@ class Cucumber(object):
         self.pool.putconn(conn)
 
     def __getitem__(self, key):
-        ''''''
+        '''Retrieve a cucumber from the Garden.'''
         if not isinstance(key, basestring):
             raise ValueError, 'keys must be strings'
 
@@ -130,6 +131,7 @@ class Cucumber(object):
         return value
 
     def __setitem__(self, key, value):
+        '''Place/replace a cucumber into the Garden.'''
         if not isinstance(key, basestring):
             raise ValueError, 'keys must be strings'
 

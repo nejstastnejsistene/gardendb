@@ -11,14 +11,14 @@ with open('.dbconfig') as f:
 ThisIsACucumber= gardendb.cucumber('ThisIsACucumber', 'a b c')
 
 pool = gardendb.postgres.dummy_pool(conn)
-db = gardendb.postgres.Cucumber(ThisIsACucumber, pool)
+garden = gardendb.postgres.Garden(ThisIsACucumber, pool)
 
 import random
 test = ThisIsACucumber(*(random.random() for i in range(3)))
 
 with conn.cursor() as cur:
     cur.execute('SET bytea_output=hex')
-    db['ahoj'] = test
-    print db['ahoj']
+    garden['ahoj'] = test
+    print garden['ahoj']
 
 conn.close()
