@@ -80,8 +80,6 @@ test = ThisIsACucumber(*(random.getrandbits(32) for i in range(3)))
 
 # Insert and then retrieve the database.
 with conn.cursor() as cur:
-    # TODO: you shouldn't need this line.
-    cur.execute('SET bytea_output=hex')
 
     # Inserting our random cucumber.
     garden['ahoj'] = test

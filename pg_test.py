@@ -17,7 +17,6 @@ import random
 test = ThisIsACucumber(*(random.getrandbits(32) for i in range(3)))
 
 with conn.cursor() as cur:
-    cur.execute('SET bytea_output=hex')
     my_garden['ahoj'] = test
     print my_garden['ahoj']
     my_garden['not_a_cucumber'] = range(10)

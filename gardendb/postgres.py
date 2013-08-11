@@ -16,10 +16,13 @@ def adapt_bytea(obj):
 
 def cast_bytea(value, cur):
     '''Convert a bytea to a python value by unpickling.'''
+
+    # Decode the bytea using the original typecast object.
+    value = psycopg2.BINARY(value, cur)
     try:
-        return pickle.loads(binascii.unhexlify(value[2:]))
+        return pickle.loads(value)
     except pickle.UnpicklingError:
-        mesg = 'unable to unpickle bytea: {!r}'.format(value)
+        mesg = 'unable to unpickle buffer: {!r}'.format(value)
         raise psycopg2.InterfaceError(mesg)
 
 
