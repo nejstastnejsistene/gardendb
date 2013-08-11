@@ -55,35 +55,35 @@ migrated_test = pickle.loads(old_test_pickle)
 print migrated_test
 ```
 
-## Seamless psycopg2 conversion
+## Seamless psycopg2 Conversion
 
 ```python
 import psycopg2
-# Import cucumber.psycopg2 to enable automatic type conversion to
-# the postgresql bytea type. This must be imported before your
-# cucumbers are created.
-import cucumber.postgres
+import random
 
-Ahoj = cucumber('Ahoj', 'dobry den')
-ahoj = Ahoj('na', 'shledanou')
+import gardendb
+import gardendb.postgres
 
-# Database template1 has a table called cucumber which has a
-# single row called foo with type bytea.
-conn = psycopg2.connect(database='template1')
+# Read db settings and open a connection.
+with open('.dbconfig') as f:
+    conn = psycopg2.connect(f.read())
+    
+ThisIsACucumber= gardendb.cucumber('ThisIsACucumber', 'a b c')
 
+# Create a Garden to put our cucumbers in. It expects a pool so
+# lets create a dummy one using our connection.
+pool = gardendb.postgres.dummy_pool(conn)
+garden = gardendb.postgres.Garden(ThisIsACucumber, pool)
+
+# Create a random test cucumber.
+test = ThisIsACucumber(*(random.random() for i in range(3)))
+
+# Insert and then retrieve the database.
 with conn.cursor() as cur:
-    # Initialization must happen once before the pickles are used.
-    cucumber.postgres.init(cur)
-
-    # Inserting a python value into a bytea automatically pickles it first.
-    cur.execute('INSERT INTO cucumber VALUES (%s)', (ahoj,))
-
-    # Retrieving the bytea unpickles it.
-    cur.execute('SELECT foo FROM cucumber')
-
-    # Same as before:
-    print cur.fetchone()[0]
-    # Ahoj(dobry='na', den='shledanou')
+    # TODO: you shouldn't need this line.
+    cur.execute('SET bytea_output=hex')
+    garden['ahoj'] = test
+    print garden['ahoj']
 
 conn.close()
 ```
