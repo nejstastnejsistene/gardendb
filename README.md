@@ -76,14 +76,22 @@ pool = gardendb.postgres.dummy_pool(conn)
 garden = gardendb.postgres.Garden(ThisIsACucumber, pool)
 
 # Create a random test cucumber.
-test = ThisIsACucumber(*(random.random() for i in range(3)))
+test = ThisIsACucumber(*(random.getrandbits(32) for i in range(3)))
 
 # Insert and then retrieve the database.
 with conn.cursor() as cur:
     # TODO: you shouldn't need this line.
     cur.execute('SET bytea_output=hex')
+
+    # Inserting our random cucumber.
     garden['ahoj'] = test
     print garden['ahoj']
+    # ThisIsACucumber(a=1626149735L, b=1648972953L, c=878265730L)
+
+    # Any pickleable value can be stored. 
+    my_garden['not_a_cucumber'] = range(10)
+    print my_garden['not_a_cucumber']
+    # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 conn.close()
 ```
