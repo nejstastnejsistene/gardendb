@@ -30,18 +30,31 @@ def cucumber(typename, field_names, verbose=False, rename=False,
         '''
         return (tuple([self._version] + list(self)),)
 
-    def __new__(cls, *args):
+    def __new__(cls, *args, **kwargs):
         '''{cls.__new__.__doc__}
 
            When only one argument is provided, use that argument as
            the state for restoring from a pickled representation.
         '''.format(cls=cls)
+
         # Cucumbers with only one field are forbidden to avoid confusion here.
-        if len(args) == 1:
+        if len(args) == 1 and not kwargs:
             version, args = args[0][0], args[0][1:]
             # Perform a migration if needed.
             if version != cls._version:
                 args = cls._migrations[version, cls._version](*args)
+
+        # Figure out args and kwargs.
+        args = list(args)
+        for field in cls._fields[len(args):]:
+            if field not in kwargs:
+                raise TypeError, 'expecting argument {!r}'.format(field)
+            args.append(kwargs.pop(field))
+
+        if kwargs:
+            args = ', '.join(repr(name) for name in kwargs)
+            raise TypeError, 'unexpected arguments: {!s}'.format(args)
+
         return tuple.__new__(cls, args)
 
     def __getstate__(self):

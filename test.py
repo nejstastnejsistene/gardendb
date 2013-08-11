@@ -31,10 +31,15 @@ print migrated_test
 
 import collections
 
-Point = cucumber('Point', 'x y')
-print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
 Point = collections.namedtuple('Point', 'x y')
 print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
+Point = cucumber('Point', 'x y')
+print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
+
+# Keyword args
+p = Point(x=1, y=2)
+print p
+print eval(repr(p))
 
 try:
     # Import cucumber.psycopg2 to enable automatic type conversion to
