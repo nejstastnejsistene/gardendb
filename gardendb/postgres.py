@@ -45,7 +45,7 @@ class Garden(object):
 
     def_fmt = '''
     CREATE TABLE {name}
-        ( key   varchar   NOT NULL UNIQUE
+        ( key   bytea     NOT NULL UNIQUE
         , value bytea     NOT NULL
         , mtime timestamp NOT NULL DEFAULT localtimestamp
         )
@@ -97,8 +97,8 @@ class Garden(object):
 
     def __getitem__(self, key):
         '''Retrieve a cucumber from the Garden.'''
-        if not isinstance(key, basestring):
-            raise ValueError, 'keys must be strings'
+
+        key = adapt_bytea(key)
 
         conn = self.pool.getconn()
         with conn.cursor() as cur:
@@ -112,9 +112,8 @@ class Garden(object):
 
     def __setitem__(self, key, value):
         '''Place/replace a cucumber into the Garden.'''
-        if not isinstance(key, basestring):
-            raise ValueError, 'keys must be strings'
 
+        key = adapt_bytea(key)
         value = adapt_bytea(value)
 
         conn = self.pool.getconn()

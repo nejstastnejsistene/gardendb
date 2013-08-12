@@ -90,6 +90,11 @@ with conn.cursor() as cur:
     my_garden['not_a_cucumber'] = range(10)
     print my_garden['not_a_cucumber']
     # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    
+    # Any object can be used as a key as well.
+    my_garden[1, 2, 3] = "key isn't a string".split()
+    print my_garden[1, 2, 3]
+    # ['key', "isn't", 'a', 'string']
 
 conn.close()
 ```
