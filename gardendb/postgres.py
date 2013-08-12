@@ -71,7 +71,7 @@ class Garden(object):
 
         # Format the class name into the table and rule definitions.
         self.table_def = self.def_fmt.format(name=self.name)
-        self.replace_cmd = self.replace_fmt.format(name=self.name)
+        self.replace_def = self.replace_fmt.format(name=self.name)
         self.select_cmd = self.select_fmt.format(name=self.name)
         self.insert_cmd = self.insert_fmt.format(name=self.name)
 
@@ -90,7 +90,7 @@ class Garden(object):
                 SELECT 1 FROM pg_rules WHERE rulename = 'replace_{name}'
                 '''.format(name=self.name))
             if not cur.fetchone():
-                cur.execute(self.replace_cmd)
+                cur.execute(self.replace_def)
 
         conn.commit()
         self.pool.putconn(conn)
