@@ -108,7 +108,7 @@ class Garden(object):
         '''Place/replace many cucumbers into the Garden.'''
 
         if not dct:
-            raise ValueError, 'expecting non empty dictionary'
+            return
 
         args = []
         for pair in dct.items():
