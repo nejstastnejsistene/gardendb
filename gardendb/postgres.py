@@ -62,6 +62,7 @@ class Garden(object):
             WHERE key = NEW.key
     '''
 
+    select_all_fmt = 'SELECT key, value FROM {name}'
     select_fmt = 'SELECT value FROM {name} WHERE key = %s'
     insert_fmt = 'INSERT INTO {name} (key, value) VALUES (%s, %s)'
 
@@ -72,6 +73,7 @@ class Garden(object):
         # Format the class name into the table and rule definitions.
         self.table_def = self.def_fmt.format(name=self.name)
         self.replace_def = self.replace_fmt.format(name=self.name)
+        self.select_all_cmd = self.select_all_fmt.format(name=self.name)
         self.select_cmd = self.select_fmt.format(name=self.name)
         self.insert_cmd = self.insert_fmt.format(name=self.name)
 
@@ -94,6 +96,14 @@ class Garden(object):
 
         conn.commit()
         self.pool.putconn(conn)
+
+    def getall(self):
+        conn = self.pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute(self.select_all_cmd)
+            pairs = cur.fetchall()
+        self.pool.putconn(conn)
+        return dict(pairs)
 
     def __getitem__(self, key):
         '''Retrieve a cucumber from the Garden.'''
