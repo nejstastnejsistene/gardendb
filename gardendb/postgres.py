@@ -107,6 +107,9 @@ class Garden(object):
     def putmany(self, dct):
         '''Place/replace many cucumbers into the Garden.'''
 
+        if not dct:
+            raise ValueError, 'expecting non empty dictionary'
+
         args = []
         for pair in dct.items():
             args += map(adapt_bytea, pair)
