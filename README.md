@@ -96,5 +96,19 @@ with conn.cursor() as cur:
     print my_garden[1, 2, 3]
     # ['key', "isn't", 'a', 'string']
 
+    import pprint
+
+    # The `getall` method returns a dictionary of all values.
+    pprint.pprint(my_garden.getall())
+    # {'ahoj': ThisIsACucumber(a=2483388665L, b=1153744226L, c=1011563634L),
+    #  'not_a_cucumber': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    #  (1, 2, 3): ['key', "isn't", 'a', 'string']}
+
+    # The `del` statement works as expected.
+    del my_garden['ahoj']
+    pprint.pprint(my_garden.getall())
+    # {'not_a_cucumber': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    #  (1, 2, 3): ['key', "isn't", 'a', 'string']}
+
 conn.close()
 ```
