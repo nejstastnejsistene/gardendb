@@ -110,5 +110,32 @@ with conn.cursor() as cur:
     # {'not_a_cucumber': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
     #  (1, 2, 3): ['key', "isn't", 'a', 'string']}
 
+    # The putmany() function will insert many cucumbers in one go.
+    dct = { x: x**2 for x in range(20) }
+    my_garden.putmany(dct)
+    pprint.pprint(my_garden.getall())
+    # {0: 0,
+    #  1: 1,
+    #  2: 4,
+    #  3: 9,
+    #  4: 16,
+    #  5: 25,
+    #  6: 36,
+    #  7: 49,
+    #  8: 64,
+    #  9: 81,
+    #  10: 100,
+    #  11: 121,
+    #  12: 144,
+    #  13: 169,
+    #  14: 196,
+    #  15: 225,
+    #  16: 256,
+    #  17: 289,
+    #  18: 324,
+    #  19: 361,
+    #  'not_a_cucumber': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    #  (1, 2, 3): ['key', "isn't", 'a', 'string']}
+
 conn.close()
 ```

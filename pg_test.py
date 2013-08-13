@@ -29,4 +29,8 @@ with conn.cursor() as cur:
     del my_garden['ahoj']
     pprint.pprint(my_garden.getall())
 
+    dct = { x: x**2 for x in range(20) }
+    my_garden.putmany(dct)
+
+    pprint.pprint(my_garden.getall())
 conn.close()

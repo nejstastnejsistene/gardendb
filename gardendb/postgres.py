@@ -64,8 +64,8 @@ class Garden(object):
 
     select_all_cmd_fmt = 'SELECT key, value FROM {name}'
     select_cmd_fmt = 'SELECT value FROM {name} WHERE key = %s'
-    insert_cmd_fmt = 'INSERT INTO {name} (key, value) VALUES (%s, %s)'
-    delete_cmd_fmt = 'DELETE FROM {name} where key = %s'
+    insert_cmd_fmt = 'INSERT INTO {name} (key, value) VALUES '
+    delete_cmd_fmt = 'DELETE FROM {name} WHERE key = %s'
 
     def __init__(self, name, pool):
         self.name = name
@@ -104,6 +104,21 @@ class Garden(object):
         self.pool.putconn(conn)
         return dict(pairs)
 
+    def putmany(self, dct):
+        '''Place/replace many cucumbers into the Garden.'''
+
+        args = []
+        for pair in dct.items():
+            args += map(adapt_bytea, pair)
+
+        cmd = self.insert_cmd + ', '.join(['(%s, %s)'] * len(dct))
+
+        conn = self.pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute(cmd, args)
+        conn.commit()
+        self.pool.putconn(conn)
+
     def __getitem__(self, key):
         '''Retrieve a cucumber from the Garden.'''
 
@@ -121,15 +136,7 @@ class Garden(object):
 
     def __setitem__(self, key, value):
         '''Place/replace a cucumber into the Garden.'''
-
-        key = adapt_bytea(key)
-        value = adapt_bytea(value)
-
-        conn = self.pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute(self.insert_cmd, (key, value))
-        conn.commit()
-        self.pool.putconn(conn)
+        self.putmany({key: value})
 
     def __delitem__(self, key):
         '''Delete a cucumber from the Garden.'''
