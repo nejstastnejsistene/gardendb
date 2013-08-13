@@ -43,7 +43,7 @@ def dummy_pool(conn):
 class Garden(object):
     '''A place to store your cucumbers.'''
 
-    def_fmt = '''
+    table_def_fmt = '''
     CREATE TABLE {name}
         ( key   bytea     NOT NULL UNIQUE
         , value bytea     NOT NULL
@@ -51,7 +51,7 @@ class Garden(object):
         )
     '''
 
-    replace_fmt = '''
+    replace_def_fmt = '''
     CREATE RULE "replace_{name}" AS
         ON INSERT TO "{name}"
         WHERE
@@ -62,20 +62,19 @@ class Garden(object):
             WHERE key = NEW.key
     '''
 
-    select_all_fmt = 'SELECT key, value FROM {name}'
-    select_fmt = 'SELECT value FROM {name} WHERE key = %s'
-    insert_fmt = 'INSERT INTO {name} (key, value) VALUES (%s, %s)'
+    select_all_cmd_fmt = 'SELECT key, value FROM {name}'
+    select_cmd_fmt = 'SELECT value FROM {name} WHERE key = %s'
+    insert_cmd_fmt = 'INSERT INTO {name} (key, value) VALUES (%s, %s)'
+    delete_cmd_fmt = 'DELETE FROM {name} where key = %s'
 
     def __init__(self, name, pool):
         self.name = name
         self.pool = pool
 
-        # Format the class name into the table and rule definitions.
-        self.table_def = self.def_fmt.format(name=self.name)
-        self.replace_def = self.replace_fmt.format(name=self.name)
-        self.select_all_cmd = self.select_all_fmt.format(name=self.name)
-        self.select_cmd = self.select_fmt.format(name=self.name)
-        self.insert_cmd = self.insert_fmt.format(name=self.name)
+        # Format the various sql commands that we use.
+        for name, value in self.__class__.__dict__.items():
+            if name.endswith('_fmt'):
+                setattr(self, name[:-4], value.format(name=self.name))
 
         conn = self.pool.getconn()
 
@@ -129,5 +128,16 @@ class Garden(object):
         conn = self.pool.getconn()
         with conn.cursor() as cur:
             cur.execute(self.insert_cmd, (key, value))
+        conn.commit()
+        self.pool.putconn(conn)
+
+    def __delitem__(self, key):
+        '''Delete a cucumber from the Garden.'''
+
+        key = adapt_bytea(key)
+
+        conn = self.pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute(self.delete_cmd, (key,))
         conn.commit()
         self.pool.putconn(conn)

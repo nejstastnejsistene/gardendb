@@ -23,6 +23,10 @@ with conn.cursor() as cur:
     print my_garden['not_a_cucumber']
     my_garden[1, 2, 3] = "key isn't a string".split()
     print my_garden[1, 2, 3]
-    print my_garden.getall()
+
+    import pprint
+    pprint.pprint(my_garden.getall())
+    del my_garden['ahoj']
+    pprint.pprint(my_garden.getall())
 
 conn.close()
