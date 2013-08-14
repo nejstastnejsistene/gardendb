@@ -33,7 +33,7 @@ my_garden.putmany(dct)
 
 pprint.pprint(my_garden.getall())
 
-typed_garden = gardendb.postgres.TypedGarden(ThisIsACucumber, 'typed_garden', pool)
+typed_garden = gardendb.postgres.Garden('typed_garden', pool, cls=ThisIsACucumber)
 
 typed_garden['foo'] = test
 print typed_garden['foo']
@@ -46,7 +46,7 @@ else:
 
 import collections
 NamedTuple = collections.namedtuple('NamedTuple', 'x y z')
-named_tuple_garden = gardendb.postgres.TypedGarden(NamedTuple, 'named_tuple_garden', pool)
+named_tuple_garden = gardendb.postgres.Garden('named_tuple_garden', pool, NamedTuple)
 
 named_tuple_garden['foo'] = NamedTuple(1, 2, 3)
 print named_tuple_garden['foo']

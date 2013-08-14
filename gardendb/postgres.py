@@ -7,6 +7,8 @@ try:
 except ImportError:
     import pickle
 
+from garden import BaseGarden
+
 
 def adapt_bytea(obj):
     '''Adapt an object to a bytea by pickling.'''
@@ -40,8 +42,7 @@ def dummy_pool(conn):
     return DummyPool()
 
 
-class Garden(object):
-    '''A place to store your cucumbers.'''
+class Garden(BaseGarden):
 
     table_def_fmt = '''
     CREATE TABLE {name}
@@ -67,7 +68,8 @@ class Garden(object):
     insert_cmd_fmt = 'INSERT INTO {name} (key, value) VALUES '
     delete_cmd_fmt = 'DELETE FROM {name} WHERE key = %s'
 
-    def __init__(self, name, pool):
+    def __init__(self, name, pool, cls=None):
+        BaseGarden.__init__(self, cls)
         self.name = name
         self.pool = pool
 
@@ -102,19 +104,21 @@ class Garden(object):
             cur.execute(self.select_all_cmd)
             pairs = cur.fetchall()
         self.pool.putconn(conn)
-        return dict(pairs)
+        return {k: self.unpack_state(v) for k, v in pairs}
 
     def putmany(self, dct):
         '''Place/replace many cucumbers into the Garden.'''
-
         if not dct:
+            # Silently ignore requests to put nothing.
             return
-
+        # Pack values.
+        dct = {k: self.pack_state(v) for k, v in dct.items()}
+        # Calculate the SQL command format.
+        cmd = self.insert_cmd + ', '.join(['(%s, %s)'] * len(dct))
+        # Generate the SQL parameters.
         args = []
         for pair in dct.items():
             args += map(adapt_bytea, pair)
-
-        cmd = self.insert_cmd + ', '.join(['(%s, %s)'] * len(dct))
 
         conn = self.pool.getconn()
         with conn.cursor() as cur:
@@ -133,9 +137,9 @@ class Garden(object):
             value = cur.fetchone()
         self.pool.putconn(conn)
 
-        if value is not None:
-            value = value[0]
-        return value
+        if value is None:
+            raise KeyError, key
+        return self.unpack_state(value[0])
 
     def __setitem__(self, key, value):
         '''Place/replace a cucumber into the Garden.'''
@@ -151,33 +155,3 @@ class Garden(object):
             cur.execute(self.delete_cmd, (key,))
         conn.commit()
         self.pool.putconn(conn)
-
-
-class TypedGarden(Garden):
-
-    def __init__(self, cls, name, pool):
-        if not issubclass(cls, tuple):
-            raise ValueError, 'cls must be a subclass of tuple'
-        Garden.__init__(self, name, pool)
-        self.cls = cls
-
-    def _to_state(self, obj):
-        if obj.__class__ != self.cls:
-            mesg = "value's class is not equal to {}"
-            raise TypeError, mesg.format(self.cls.__name__)
-        if hasattr(obj, '_version'):
-            return obj.__getnewargs__()[0]
-        else:
-            return obj.__getnewargs__()
-
-    def putmany(self, dct):
-        dct = {k: self._to_state(v) for k, v in dct.items()}
-        Garden.putmany(self, dct)
-
-    def __getitem__(self, key):
-        state = Garden.__getitem__(self, key)
-        if state is not None:
-            if hasattr(self.cls, '_cucumber'):
-                state = (state,)
-            state = self.cls(*state)
-        return state
