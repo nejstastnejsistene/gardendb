@@ -24,12 +24,12 @@ from cucumber import *
 # Point created with cucumber.
 Point = cucumber('Point', 'x y')
 print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
-# 35
+# 34
 
 # Point created with namedtuple.
 Point = collections.namedtuple('Point', 'x y')
 print len(pickle.dumps(Point(1, 2), pickle.HIGHEST_PROTOCOL))
-# 94
+# 86
 ```
 
 ## Example Cucumber Usage

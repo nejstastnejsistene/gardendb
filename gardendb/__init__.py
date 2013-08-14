@@ -1,9 +1,5 @@
 import collections
 import inspect
-try:
-    import cPickle
-except ImportError:
-    import pickle
 
 
 def cucumber(typename, field_names, verbose=False, rename=False,
