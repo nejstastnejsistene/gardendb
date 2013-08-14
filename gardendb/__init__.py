@@ -86,6 +86,7 @@ def cucumber(typename, field_names, verbose=False, rename=False,
 
         print '    # The following have been added by cucumber:'
         print
+        print '    _cucumber = True'
         print '    _version =', repr(version)
         print '    _migrations = {}'
         print
@@ -102,6 +103,7 @@ def cucumber(typename, field_names, verbose=False, rename=False,
             print fmt.format(typename, k[0], k[1], v)
 
     # Add new fields to the class.
+    cls._cucumber      = True
     cls._version       = version
     cls._migrations    = {}
     cls.__getnewargs__ = __getnewargs__

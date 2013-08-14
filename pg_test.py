@@ -37,5 +37,24 @@ typed_garden = gardendb.postgres.TypedGarden(ThisIsACucumber, 'typed_garden', po
 
 typed_garden['foo'] = test
 print typed_garden['foo']
+try:
+    typed_garden['bar'] = (1, 2, 3)
+except TypeError:
+    pass
+else:
+    assert False, 'type error should have been raised'
+
+import collections
+NamedTuple = collections.namedtuple('NamedTuple', 'x y z')
+named_tuple_garden = gardendb.postgres.TypedGarden(NamedTuple, 'named_tuple_garden', pool)
+
+named_tuple_garden['foo'] = NamedTuple(1, 2, 3)
+print named_tuple_garden['foo']
+try:
+    named_tuple_garden['bar'] = test
+except TypeError:
+    pass
+else:
+    assert False, 'type error should have been raised'
 
 conn.close()
