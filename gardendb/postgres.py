@@ -74,7 +74,7 @@ class PgGarden(BaseGarden):
         self.pool = pool
 
         # Format the various sql commands that we use.
-        for name, value in Garden.__dict__.items():
+        for name, value in PgGarden.__dict__.items():
             if name.endswith('_fmt'):
                 setattr(self, name[:-4], value.format(name=self.name))
 
