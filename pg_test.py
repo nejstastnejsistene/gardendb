@@ -32,4 +32,10 @@ dct = { x: x**2 for x in range(20) }
 my_garden.putmany(dct)
 
 pprint.pprint(my_garden.getall())
+
+typed_garden = gardendb.postgres.TypedGarden(ThisIsACucumber, 'typed_garden', pool)
+
+typed_garden['foo'] = test
+print typed_garden['foo']
+
 conn.close()

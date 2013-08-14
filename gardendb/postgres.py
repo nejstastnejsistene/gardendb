@@ -72,8 +72,9 @@ class Garden(object):
         self.pool = pool
 
         # Format the various sql commands that we use.
-        for name, value in self.__class__.__dict__.items():
+        for name, value in Garden.__dict__.items():
             if name.endswith('_fmt'):
+                print name[:-4]
                 setattr(self, name[:-4], value.format(name=self.name))
 
         conn = self.pool.getconn()
@@ -151,3 +152,31 @@ class Garden(object):
             cur.execute(self.delete_cmd, (key,))
         conn.commit()
         self.pool.putconn(conn)
+
+
+class TypedGarden(Garden):
+
+    def __init__(self, cls, name, pool):
+        if not issubclass(cls, tuple):
+            raise ValueError, 'cls must be a subclass of tuple'
+        Garden.__init__(self, name, pool)
+        self.cls = cls
+
+    def _to_state(self, obj):
+        if not isinstance(obj, self.cls):
+            mesg = 'value is not an instance of {}'.format(self.cls.__name__)
+            raise TypeError, mesg
+        if hasattr(obj, '_version'):
+            return obj.__getnewargs__()[0]
+        else:
+            return tuple(obj)
+
+    def putmany(self, dct):
+        dct = {k: self._to_state(v) for k, v in dct.items()}
+        Garden.putmany(self, dct)
+
+    def __getitem__(self, key):
+        state = Garden.__getitem__(self, key)
+        if state is not None:
+            state = self.cls(state)
+        return state
