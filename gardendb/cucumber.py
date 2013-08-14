@@ -3,7 +3,7 @@ import inspect
 
 
 def cucumber(typename, field_names, verbose=False, rename=False,
-             version=None, migrations=None):
+             version=0, migrations=None):
     '''Like namedtuple, but better for making pickles.'''
 
     if migrations is None:
