@@ -7,7 +7,7 @@ try:
 except ImportError:
     import pickle
 
-from garden import BaseGarden
+from . import BaseGarden
 
 
 def adapt_bytea(obj):
