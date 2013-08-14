@@ -164,3 +164,9 @@ class BaseGarden(object):
                 # Put the cucumber state back in a singleton tuple.
                 state = (state,)
             return self.cls(*state)
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default

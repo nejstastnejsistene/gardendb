@@ -57,4 +57,10 @@ except TypeError:
 else:
     assert False, 'type error should have been raised'
 
+print named_tuple_garden.get('not here', 'not here')
+try: named_tuple_garden['not here']
+except KeyError: pass
+else: assert False
+del named_tuple_garden['not here']
+
 conn.close()

@@ -129,11 +129,11 @@ class PgGarden(BaseGarden):
     def __getitem__(self, key):
         '''Retrieve a cucumber from the Garden.'''
 
-        key = adapt_bytea(key)
+        _key = adapt_bytea(key)
 
         conn = self.pool.getconn()
         with conn.cursor() as cur:
-            cur.execute(self.select_cmd, (key,))
+            cur.execute(self.select_cmd, (_key,))
             value = cur.fetchone()
         self.pool.putconn(conn)
 
@@ -146,7 +146,10 @@ class PgGarden(BaseGarden):
         self.putmany({key: value})
 
     def __delitem__(self, key):
-        '''Delete a cucumber from the Garden.'''
+        '''Delete a cucumber from the Garden.
+        
+           If the key does not exist, no exception is raised.'
+        '''
 
         key = adapt_bytea(key)
 
