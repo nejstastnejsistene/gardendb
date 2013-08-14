@@ -1,6 +1,18 @@
-gardendb (WIP)
-============== 
+gardendb
+========
 Simple python flat-file databases with Cucumbers: simple, version-controlled records with streamlined pickle representations.
+
+## Installation
+
+To install from PyPI:
+
+    pip install gardendb
+
+Or, if you prefer to build from source:
+
+    git clone git@github.com:nejstastnejsistene/gardendb.git
+    cd gardendb
+    python setup.py install
 
 ## Streamlined Pickle Representations
 
