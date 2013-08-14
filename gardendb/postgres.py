@@ -42,7 +42,7 @@ def dummy_pool(conn):
     return DummyPool()
 
 
-class Garden(BaseGarden):
+class PgGarden(BaseGarden):
 
     table_def_fmt = '''
     CREATE TABLE {name}

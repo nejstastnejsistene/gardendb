@@ -85,7 +85,7 @@ ThisIsACucumber= gardendb.cucumber('ThisIsACucumber', 'a b c')
 # Create a Garden to put our cucumbers in. It expects a pool so
 # lets create a dummy one using our connection.
 pool = gardendb.postgres.dummy_pool(conn)
-garden = gardendb.postgres.Garden(ThisIsACucumber, pool)
+garden = gardendb.postgres.PgGarden(ThisIsACucumber, pool)
 
 # Create a random test cucumber.
 test = ThisIsACucumber(*(random.getrandbits(32) for i in range(3)))

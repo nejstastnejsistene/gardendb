@@ -11,7 +11,7 @@ with open('.dbconfig') as f:
 ThisIsACucumber= gardendb.cucumber('ThisIsACucumber', 'a b c')
 
 pool = gardendb.postgres.dummy_pool(conn)
-my_garden = gardendb.postgres.Garden('my_garden', pool)
+my_garden = gardendb.postgres.PgGarden('my_garden', pool)
 
 import random
 test = ThisIsACucumber(*(random.getrandbits(32) for i in range(3)))
@@ -33,7 +33,7 @@ my_garden.putmany(dct)
 
 pprint.pprint(my_garden.getall())
 
-typed_garden = gardendb.postgres.Garden('typed_garden', pool, cls=ThisIsACucumber)
+typed_garden = gardendb.postgres.PgGarden('typed_garden', pool, cls=ThisIsACucumber)
 
 typed_garden['foo'] = test
 print typed_garden['foo']
@@ -46,7 +46,7 @@ else:
 
 import collections
 NamedTuple = collections.namedtuple('NamedTuple', 'x y z')
-named_tuple_garden = gardendb.postgres.Garden('named_tuple_garden', pool, NamedTuple)
+named_tuple_garden = gardendb.postgres.PgGarden('named_tuple_garden', pool, NamedTuple)
 
 named_tuple_garden['foo'] = NamedTuple(1, 2, 3)
 print named_tuple_garden['foo']
