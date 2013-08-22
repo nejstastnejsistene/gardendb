@@ -166,11 +166,12 @@ class BaseGarden(object):
             return self.cls(*state)
 
     def get(self, key, default=None):
-        try:
-            if isinstance(obj, str):
-                obj = unicode(obj)
-        except UnicodeDecodeError:
-            pass # Just use the string if we can't convert it.
+        if isinstance(key, str):
+            # Convert strings to unicodes when possible
+            try:
+                obj = unicode(key)
+            except UnicodeDecodeError:
+                pass
         try:
             return self[key]
         except KeyError:
