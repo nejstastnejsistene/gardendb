@@ -167,6 +167,19 @@ class BaseGarden(object):
 
     def get(self, key, default=None):
         try:
+            if isinstance(obj, str):
+                obj = unicode(obj)
+        except UnicodeDecodeError:
+            pass # Just use the string if we can't convert it.
+        try:
             return self[key]
         except KeyError:
             return default
+
+    def __contains__(self, key):
+        '''Check whether this key is in the Garden.'''
+        try:
+            self[key]
+            return True
+        except KeyError:
+            return False
