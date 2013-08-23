@@ -12,6 +12,12 @@ from . import BaseGarden
 
 def adapt_bytea(obj):
     '''Adapt an object to a bytea by pickling.'''
+    if isinstance(obj, str):
+        # Convert strings to unicodes when possible
+        try:
+            obj = unicode(obj)
+        except UnicodeDecodeError:
+            pass
     p = pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)
     return psycopg2.Binary(p)
 
