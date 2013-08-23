@@ -1,4 +1,5 @@
 import binascii
+import threading
 import psycopg2
 from psycopg2.extensions import new_type, register_type
 
@@ -103,6 +104,18 @@ class PgGarden(BaseGarden):
 
         conn.commit()
         self.pool.putconn(conn)
+
+    def lock(garden, key, default=None):
+        lock = threading.Lock()
+        class Ctx(object):
+            def __enter__(self):
+                lock.acquire()
+                self.value = garden.get(key, default)
+                return self
+            def __exit__(self, *args):
+                garden[key] = self.value
+                lock.release()
+        return Ctx()
 
     def getall(self):
         conn = self.pool.getconn()

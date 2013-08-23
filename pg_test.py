@@ -63,4 +63,9 @@ except KeyError: pass
 else: assert False
 del named_tuple_garden['not here']
 
+asdf = gardendb.postgres.PgGarden('asdf', pool)
+with asdf.lock('dictionary', {}) as ctx:
+    ctx.value['x'] = 1
+print asdf['dictionary']['x']
+
 conn.close()
